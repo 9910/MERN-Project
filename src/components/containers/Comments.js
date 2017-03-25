@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
-import Comment from '../presentation/Comment'
+import { CreateComment, Comment } from '../presentation'
 import styles from './styles'
+import { APIManager } from '../../utils/index'
 
 class Comments extends Component {
     constructor() {
@@ -8,22 +9,41 @@ class Comments extends Component {
         this.state = {
             comment: {
                 username: '',
-                body: '',
-                timestamp: ''
+                body: ''
             },
             list: []
         }
     }
 
+    componentDidMount() {
+      APIManager.get('/api/comment', null, (err, response) => {
+         if(err){
+            alert('ERROR: ' + err.message)
+            return
+         }
+
+         this.setState({
+            list: response.results
+         })
+      })
+   }
+
     submitComment() {
         console.log('submitComment: ' + JSON.stringify(this.state.comment))
 
-        let updatedList = Object.assign([], this.state.list)
-        updatedList.push(this.state.comment)
+      APIManager.post('/api/comment', this.state.comment, (err, response) => {
+         if(err){
+            alert(err)
+            return
+         }
 
-        this.setState({
-           list: updatedList
-        })
+         console.log(JSON.stringify(response))
+         let updatedList = Object.assign([], this.state.list)
+         updatedList.push(response.result)
+         this.setState({
+            list: updatedList
+         })
+      })
     }
 
     updateBody(event) {
@@ -47,15 +67,6 @@ class Comments extends Component {
         })
     }
 
-    updateTimestamp(event) {
-        console.log('updateTimestamp: ' + event.target.value)
-        // this.state.comment['username'] = event.triger.value // WRONG!!!
-
-        let updatedComment = Object.assign({}, this.state.comment)
-        updatedComment['timestamp'] = event.target.value
-        this.setState({comment: updatedComment})
-    }
-
     render() {
         const commentList = this.state.list.map((comment, i) => {
             return (
@@ -69,11 +80,8 @@ class Comments extends Component {
                     <ul style={styles.comment.commentsList}>
                         {commentList}
                     </ul>
-
-                    <input onChange={this.updateUsername.bind(this)} className="form-control" type="text" placeholder="Username"/><br/>
-                    <input onChange={this.updateBody.bind(this)} className="form-control" type="text" placeholder="Comment..."/><br/>
-                    <input onChange={this.updateTimestamp.bind(this)} className="form-control" type="text" placeholder="Time..."/><br/>
-                    <button onClick={this.submitComment.bind(this)} className="btn btn-info">Submit Comment</button>
+                    
+                    <CreateComment />
                 </div>
 
             </div>
