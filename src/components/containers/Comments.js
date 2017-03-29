@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import { CreateComment, Comment } from '../presentation'
+import { CreateComment, Comment } from '../presentation/index'
 import styles from './styles'
 import { APIManager } from '../../utils/index'
 
@@ -7,10 +7,10 @@ class Comments extends Component {
     constructor() {
         super() // Extend old Constructor
         this.state = {
-            comment: {
-                username: '',
-                body: ''
-            },
+            // comment: {
+            //     username: '',
+            //     body: ''
+            // },
             list: []
         }
     }
@@ -28,10 +28,11 @@ class Comments extends Component {
       })
    }
 
-    submitComment() {
-        console.log('submitComment: ' + JSON.stringify(this.state.comment))
+    submitComment(comment) {
+      console.log('submitComment: ' + JSON.stringify(comment))
 
-      APIManager.post('/api/comment', this.state.comment, (err, response) => {
+      let updatedComment = Object.assign({}, comment)
+      APIManager.post('/api/comment', updatedComment, (err, response) => {
          if(err){
             alert(err)
             return
@@ -44,27 +45,6 @@ class Comments extends Component {
             list: updatedList
          })
       })
-    }
-
-    updateBody(event) {
-        console.log('updateBody: ' + event.target.value)
-
-        let updatedComment = Object.assign({}, this.state.comment)
-        updatedComment['body'] = event.target.value
-        this.setState({
-           comment: updatedComment
-        })
-    }
-
-    updateUsername(event) {
-        console.log('updateUsername: ' + event.target.value)
-        // this.state.comment['username'] = event.triger.value // WRONG!!!
-
-        let updatedComment = Object.assign({}, this.state.comment)
-        updatedComment['username'] = event.target.value
-        this.setState({
-           comment: updatedComment
-        })
     }
 
     render() {
@@ -80,8 +60,8 @@ class Comments extends Component {
                     <ul style={styles.comment.commentsList}>
                         {commentList}
                     </ul>
-                    
-                    <CreateComment />
+
+                    <CreateComment onCreate={this.submitComment.bind(this)} />
                 </div>
 
             </div>
